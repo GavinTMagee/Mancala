@@ -9,8 +9,7 @@ public class Board {
 	public boolean currIsPlayer1;
 	
 	//for AI component
-	public int maxScore = 0;
-	public int bestMove = 8;
+	public int bestMove = -1;
 	
 	public Board() {
 		for (int i = 0; i < 14; i++) {
@@ -82,47 +81,6 @@ public class Board {
 		}
 		return board[MANCALA_1] > board[MANCALA_2];
 	}
-	
-	//always must be called with currIsPlayer1 = false
-	public void aIMove(int movesAhead, List<Integer> moveSeq) {
-		if (movesAhead == 0 || this.sumSide(false) == 0 || this.sumSide(true) == 0) {
-			if (this.board[MANCALA_2] >= maxScore) {
-				maxScore = this.board[MANCALA_2];
-				bestMove = moveSeq.get(0);
-			}
-			return;
-		}
-		if (currIsPlayer1) { // player 1 move
-			for (int i = 1; i <= 6; i++) {
-				if (board[i] != 0) {
-					Board boardCopy = this.clone();
-					this.moveIndex(i);//choose
-					moveSeq.add(i);
-					this.aIMove(movesAhead-1,moveSeq);
-					moveSeq.remove(moveSeq.size()-1);
-					this.unchoose(boardCopy);//unchoose
-				}
-			}
-		} else { // player 2 move
-			for (int i = 8; i<=13; i++) {
-				if (board[i] != 0) {
-					Board boardCopy = this.clone();
-					this.moveIndex(i);//choose
-					moveSeq.add(i);
-					this.aIMove(movesAhead-1,moveSeq);
-					moveSeq.remove(moveSeq.size()-1);
-					this.unchoose(boardCopy);//unchoose
-				}
-			}
-		}
-	}
-	
-	public void unchoose(Board boardCopy) {
-		for (int i = 0; i < 14; i++) {
-			this.board[i] = boardCopy.board[i];
-		}
-		this.currIsPlayer1 = boardCopy.currIsPlayer1;
-	}
 
 	public String toString() {
 		String repr = "     "; // skips mancala
@@ -149,5 +107,40 @@ public class Board {
 		board.currIsPlayer1 = this.currIsPlayer1;
 		return board;
 	}
+	
+	public int miniMax(int maxDepth, Board board,boolean updateBestMove) {
+		if (board.sumSide(true) == 0 || board.sumSide(false) == 0 || maxDepth == 0) {
+			return board.board[MANCALA_1] - board.board[MANCALA_2];
+		}
+		else if (board.currIsPlayer1) {
+			int max = -1000000;
+			for (int i = 1; i <= 6; i++) {
+				if (board.board[i] != 0) {
+					Board child = board.clone();
+					child.moveIndex(i);
+					int val = miniMax(maxDepth - 1, child,false);
+					if (val > max) {
+						max = val;
+					}
+				}
+			}
+			return max;
+		}else {
+			int min = 1000000;
+			for (int i = 8; i <= 13; i++) {
+				if (board.board[i] != 0) {
+					Board child = board.clone();
+					child.moveIndex(i);
+					int val = miniMax(maxDepth - 1, child,false);
+					if (val < min) {
+						min = val;
+						if (updateBestMove) {
+							this.bestMove = i;
+						}
+					}
+				}
+			}
+			return min;
+		}
+	}
 }
-
