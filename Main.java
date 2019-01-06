@@ -1,40 +1,32 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
-	public static final int DIFFICULTY = 6; // increased number makes it harder to win.
+	public static final int DIFFICULTY = -1; // increased number makes it harder to win., -1 is hardest
+	//false = player 2 turn
+	//true = player 1 turn
 	
 	public static void main(String[] args) {
-		List<List<Integer>> allMoveSets = new ArrayList<>();
-		generatePossMoveSets(new ArrayList<Integer>(), allMoveSets,false);
-		evalBestMoveSet(allMoveSets);
-	}
-
-	public static void generatePossMoveSets(List<Integer> possMoveSet, List<List<Integer>> allMoveSets, boolean playerTurn) {
-		if (possMoveSet.size() == DIFFICULTY) {
-			List<Integer> possMoveSetCopy = new ArrayList<>();
-			for (int num : possMoveSet) {
-				possMoveSetCopy.add(num);
+		Board board = new Board();
+		System.out.println(board);
+		Scanner input = new Scanner(System.in);
+		while (!board.gameOver()) {
+			while (board.currIsPlayer1) {//player 1 turn
+				System.out.print("What is your move: ");
+				int moveAt = Integer.parseInt(input.nextLine());
+				System.out.println();
+				board.moveIndex(moveAt);
+				System.out.println(board);
+				System.out.println("==========================\n");
+			}while (!board.currIsPlayer1) {//player 2 turn
+				board.miniMax(DIFFICULTY, board,true);
+				board.moveIndex(board.bestMove);
+				System.out.println("AI MOVE");
+				System.out.println(board);
+				System.out.println("==========================\n");
+				board.bestMove = -1;
 			}
-			allMoveSets.add(possMoveSetCopy);
-		} else if (playerTurn){
-			for (int i = 8; i < 14; i++) {
-				possMoveSet.add(i);
-				generatePossMoveSets(possMoveSet, allMoveSets,false);
-				possMoveSet.remove(possMoveSet.size()-1);
-			}
-		} else {
-			for (int i = 1; i < 7; i++) {
-				possMoveSet.add(i);
-				generatePossMoveSets(possMoveSet,allMoveSets,true);
-				possMoveSet.remove(possMoveSet.size()-1);
-			}
-		}
-	}
-	
-	public static void evalBestMoveSet(List<List<Integer>> allMoveSets) {
-		for (List<Integer> moveSet : allMoveSets) {
-			
 		}
 	}
 }
